@@ -7,35 +7,36 @@ from PIL import Image
 
 from pprint import pprint
 
-def sift_matcher(img):
+# price_Rect format: (start_x, start_y), (end_x, end_y)
+def sift_matcher(img, price_rect):
+    print(price_rect)
     logos = ['cablevision', 'itba', 'medicus', 'movistar']
     # logos = ['cablevision']
     matches = 0
-    result = None
+    company = None
     result_img = None
-    # for logo in logos:
-    #     logo_img = io.read('./images/logos/%s.jpg' % logo)
-    #     res_img, score = sift_comparison(img, logo_img)
-    #     print('%s: %d' % (logo, score))
-    #     if score > matches:
-    #         matches = score
-    #         result = logo
-    #         result_img = res_img
+    for logo in logos:
+        logo_img = io.read('./images/logos/%s.jpg' % logo)
+        res_img, score = sift_comparison(img, logo_img)
+        print('%s: %d' % (logo, score))
+        if score > matches:
+            matches = score
+            company = logo
+            result_img = res_img
 
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
 
     filename = "{}.png".format(os.getpid())
-    cv2.imwrite(filename, gray)
+    start = price_rect[0]
+    end = price_rect[1]
+    cv2.imwrite(filename, gray[start[0]:end[0], start[1]:end[1]])
 
     text = pytesseract.image_to_string(Image.open(filename))
     os.remove(filename)
     print(text)
 
-
-    return [result, gray]
-    # print('Match: %s' % result)
-    # return [result, result_img]
+    return [company, text, result_img]
 
 def apply_sift(img):
     # orb = cv2.ORB_create()
