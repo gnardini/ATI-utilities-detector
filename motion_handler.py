@@ -51,7 +51,7 @@ class MotionHandler:
 
     def _draw_rect(self):
         self.image_manger.restore_original()
-        img = self.image_manger.get_image('image')
+        img = self.image_manger.get_image('resized')
         start_x = min(self.start_x, self.last_x)
         start_y = min(self.start_y, self.last_y)
         end_x = max(self.start_x, self.last_x)
@@ -66,4 +66,4 @@ class MotionHandler:
         for i in range(start_y, end_y):
             img[start_x, i] = [255, 0, 0]
             img[end_x, i] = [255, 0, 0]
-        self.image_manger.put_into('image', img)
+        self.image_manger.update_panel(img)

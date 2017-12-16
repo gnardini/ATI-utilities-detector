@@ -10,7 +10,8 @@ class ImageManagement:
             'image': None
         }
         self.images = {
-            'image': None
+            'image': None,
+            'resized': None
         }
         self.saved_original = None
         self.scale = scale
@@ -36,19 +37,22 @@ class ImageManagement:
 
         height, width = img.shape[:2]
         img = cv2.resize(img, (max_width, int(max_width * (height / width))))
+        self.set_image('resized', img)
 
+        self.update_panel(img)
+
+    def update_panel(self, img):
         img = self.to_tk_image(img)
-        panel = self.get_panel(key)
+        panel = self.get_panel('image')
         panel.configure(image=img)
         panel.image = img
 
-
     def save_original(self):
-        self.saved_original = np.copy(self.get_image('image'))
+        self.saved_original = np.copy(self.get_image('resized'))
 
     def restore_original(self):
         if self.saved_original is not None:
-            self.put_into('image', np.copy(self.saved_original))
+            self.set_image('resized', np.copy(self.saved_original))
 
     def clear_cache(self):
         self.saved_original = None
