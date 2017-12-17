@@ -9,21 +9,27 @@ from pprint import pprint
 
 # price_Rect format: (start_x, start_y), (end_x, end_y)
 def sift_matcher(img, price_rect):
-    print(price_rect)
     logos = ['cablevision', 'itba', 'medicus', 'movistar']
     # logos = ['cablevision']
-    matches = 0
+    max_score = 0
     company = None
     result_img = None
     for logo in logos:
         logo_img = io.read('./images/logos/%s.jpg' % logo)
         res_img, score = sift_comparison(img, logo_img)
         print('%s: %d' % (logo, score))
-        if score > matches:
-            matches = score
+        if score > max_score:
+            max_score = score
             company = logo
             result_img = res_img
+    if max_score < 20:
+        company = 'Desconocido'
 
+    price = find_price(img, price_rect)
+
+    return [company, price, result_img]
+
+def find_price(img, price_rect):
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
 
@@ -32,11 +38,16 @@ def sift_matcher(img, price_rect):
     end = price_rect[1]
     cv2.imwrite(filename, gray[start[0]:end[0], start[1]:end[1]])
 
-    text = pytesseract.image_to_string(Image.open(filename))
+    raw = pytesseract.image_to_string(Image.open(filename))
     os.remove(filename)
-    print(text)
 
-    return [company, text, result_img]
+    filtered = raw.replace('l', '1').replace('i', '1').replace(' ', '').replace(',', '').replace('.', '').replace('$', '')
+    if len(filtered) > 2:
+        final = filtered[:-2] + ',' + filtered[-2:]
+    else:
+        final = raw
+
+    return final.encode('ascii', errors='ignore').decode('ascii')
 
 def apply_sift(img):
     # orb = cv2.ORB_create()

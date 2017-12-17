@@ -6,10 +6,11 @@ class MotionHandler:
         self.image_manger = image_manager
         self.scale = scale
 
-    def start(self):
+    def start(self, run_on_finish):
         self.setting_first = True
         self.end_x = None
         self.end_y = None
+        self.run_on_finish = run_on_finish
         manager = self.image_manger
         manager.restore_original()
         manager.save_original()
@@ -21,6 +22,7 @@ class MotionHandler:
         panel = self.image_manger.get_panel('image')
         panel.unbind('<Motion>')
         panel.unbind('<Button-1>')
+        self.run_on_finish()
 
     def movement(self, event):
         self.last_x = event.y
